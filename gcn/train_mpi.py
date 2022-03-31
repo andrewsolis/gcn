@@ -85,12 +85,23 @@ cost_val = []
 for epoch in range(FLAGS.epochs):
 
     t = time.time()
+
+    #### MPI SCATTER #####
+    '''Take the features scipy object and break it up into pieces based on the rank
+       then send the appropriate features matrix to each rank. Figure out if row
+       in features object is single data or column. Also might need to send'''
+
     # Construct feed dictionary
     feed_dict = construct_feed_dict(features, support, y_train, train_mask, placeholders)
     feed_dict.update({placeholders['dropout']: FLAGS.dropout})
 
     # Training step
     outs = sess.run([model.opt_op, model.loss, model.accuracy], feed_dict=feed_dict)
+
+    #### MPI Gather #####
+    '''MPI_Gather will be called to retrieve every processes current model. The models 
+       will be combined to form one primary model which takes the average of all the models
+       calculated 'weight' to form the currrent model, which will be tested '''
 
     # Validation
     cost, acc, duration = evaluate(features, support, y_val, val_mask, placeholders)
