@@ -144,11 +144,11 @@ class GCN(Model):
         super(GCN, self).__init__(**kwargs)
 
         # initialize horovod
-        hvd.init()
+        # hvd.init()
 
         # Pin GPU to be used to process local rank (one GPU per process)
-        self.config = tf.compat.v1.ConfigProto()
-        self.config.gpu_options.visible_device_list = str(hvd.local_rank())
+        # self.config = tf.compat.v1.ConfigProto()
+        # self.config.gpu_options.visible_device_list = str(hvd.local_rank())
 
         self.inputs = placeholders['features']
         self.input_dim = input_dim
@@ -156,7 +156,7 @@ class GCN(Model):
         self.output_dim = placeholders['labels'].get_shape().as_list()[1]
         self.placeholders = placeholders
 
-        print( 'horovod size:', hvd.size())
+        # print( 'horovod size:', hvd.size())
 
         # multiple learning rate by horovod size
         self.optimizer = tf.compat.v1.train.AdamOptimizer(learning_rate=(FLAGS.learning_rate * hvd.size() ) )

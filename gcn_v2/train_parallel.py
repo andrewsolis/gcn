@@ -7,6 +7,17 @@ import tensorflow as tf
 from gcn_v2.utils import *
 from gcn_v2.models_parallel import GCN, MLP
 
+import horovod.tensorflow as hvd
+
+# initialize horovod
+hvd.init()
+
+# Pin GPU to be used to process local rank (one GPU per process)
+config = tf.ConfigProto()
+config.gpu_options.visible_device_list = str(hvd.local_rank())
+
+if hvd.rank() == 0:
+    print('Horovod Size:', hvd.size())
 
 # Set random seed
 seed = 123
@@ -82,7 +93,7 @@ cost_val = []
 tf.compat.v1.train.get_or_create_global_step()
 
 with tf.compat.v1.train.MonitoredTrainingSession( checkpoint_dir=model.checkpoint_dir,
-                                        config=model.config,
+                                        config=config,
                                         hooks=model.hooks) as mon_sess:
 
     # Train model
