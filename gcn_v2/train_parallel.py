@@ -4,14 +4,17 @@ from __future__ import print_function
 import time
 import tensorflow as tf
 
-from gcn.utils import *
-from gcn.models_parallel import GCN, MLP
+from gcn_v2.utils import *
+from gcn_v2.models_parallel import GCN, MLP
 
 
 # Set random seed
 seed = 123
 np.random.seed(seed)
 tf.compat.v1.set_random_seed(seed)
+
+# disable eager execution
+tf.compat.v1.disable_eager_execution()
 
 # Settings
 flags = tf.compat.v1.app.flags

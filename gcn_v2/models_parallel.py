@@ -1,5 +1,5 @@
-from gcn.layers import *
-from gcn.metrics import *
+from gcn_v2.layers import *
+from gcn_v2.metrics import *
 
 import horovod.tensorflow as hvd
 
