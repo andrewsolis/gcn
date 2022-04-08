@@ -13,7 +13,7 @@ import horovod.tensorflow as hvd
 hvd.init()
 
 # Pin GPU to be used to process local rank (one GPU per process)
-config = tf.ConfigProto()
+config = tf.compat.v1.ConfigProto()
 config.gpu_options.visible_device_list = str(hvd.local_rank())
 
 if hvd.rank() == 0:
