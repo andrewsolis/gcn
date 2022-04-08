@@ -123,12 +123,12 @@ with tf.compat.v1.train.MonitoredTrainingSession( checkpoint_dir=model.checkpoin
         #     print("Early stopping...")
         #     break
 
-    if hvd.rank():
+    if hvd.rank() == 0:
         print("Optimization Finished!")
 
     # Testing
     test_cost, test_acc, test_duration = evaluate(features, support, y_test, test_mask, placeholders, mon_sess)
     
-    if hvd.rank():
+    if hvd.rank() == 0:
         print("Test set results:", "cost=", "{:.5f}".format(test_cost),
         "accuracy=", "{:.5f}".format(test_acc), "time=", "{:.5f}".format(time.time() - t))
