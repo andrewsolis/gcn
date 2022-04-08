@@ -166,7 +166,7 @@ class GCN(Model):
 
         # Add hook to broadcast variables from rank 0 to all other processes during
         # initialization.
-        self.hooks = [hvd.BroadcastGlobalVariablesHook(0)]        
+        #self.hooks = [hvd.BroadcastGlobalVariablesHook(0)]        
 
         self.build()
 
