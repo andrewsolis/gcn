@@ -92,6 +92,11 @@ cost_val = []
 
 tf.compat.v1.train.get_or_create_global_step()
 
+t = time.time()
+# Construct feed dictionary
+feed_dict = construct_feed_dict(features, support, y_train, train_mask, placeholders)
+feed_dict.update({placeholders['dropout']: FLAGS.dropout})
+
 with tf.compat.v1.train.MonitoredTrainingSession( checkpoint_dir=model.checkpoint_dir,
                                         config=config,
                                         hooks=model.hooks) as mon_sess:
@@ -100,11 +105,6 @@ with tf.compat.v1.train.MonitoredTrainingSession( checkpoint_dir=model.checkpoin
     for epoch in range(FLAGS.epochs):
     # while not mon_sess.should_stop():
 
-        t = time.time()
-        # Construct feed dictionary
-        feed_dict = construct_feed_dict(features, support, y_train, train_mask, placeholders)
-        feed_dict.update({placeholders['dropout']: FLAGS.dropout})
-
         # Training step
         outs = mon_sess.run([model.opt_op, model.loss, model.accuracy], feed_dict=feed_dict)
 
@@ -112,18 +112,23 @@ with tf.compat.v1.train.MonitoredTrainingSession( checkpoint_dir=model.checkpoin
         cost, acc, duration = evaluate(features, support, y_val, val_mask, placeholders, mon_sess)
         cost_val.append(cost)
 
+        if hvd.rank() == 0:
+
         # Print results
-        print("Epoch:", '%04d' % (epoch + 1), "train_loss=", "{:.5f}".format(outs[1]),
+            print("Epoch:", '%04d' % (epoch + 1), "train_loss=", "{:.5f}".format(outs[1]),
             "train_acc=", "{:.5f}".format(outs[2]), "val_loss=", "{:.5f}".format(cost),
-            "val_acc=", "{:.5f}".format(acc), "time=", "{:.5f}".format(time.time() - t))
+            "val_acc=", "{:.5f}".format(acc), "time=", "{:.5f}".format(duration))
 
         # if epoch > FLAGS.early_stopping and cost_val[-1] > np.mean(cost_val[-(FLAGS.early_stopping+1):-1]):
         #     print("Early stopping...")
         #     break
 
-    print("Optimization Finished!")
+    if hvd.rank():
+        print("Optimization Finished!")
 
     # Testing
     test_cost, test_acc, test_duration = evaluate(features, support, y_test, test_mask, placeholders, mon_sess)
-    print("Test set results:", "cost=", "{:.5f}".format(test_cost),
-        "accuracy=", "{:.5f}".format(test_acc), "time=", "{:.5f}".format(test_duration))
+    
+    if hvd.rank():
+        print("Test set results:", "cost=", "{:.5f}".format(test_cost),
+        "accuracy=", "{:.5f}".format(test_acc), "time=", "{:.5f}".format(time.time() - t))
